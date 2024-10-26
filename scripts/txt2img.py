@@ -47,7 +47,7 @@ def numpy_to_pil(images):
 
 def load_model_from_config(config, ckpt, verbose=False):
     print(f"Loading model from {ckpt}")
-    pl_sd = torch.load(ckpt, map_location="cpu")
+    pl_sd = torch.load(ckpt, map_location="cuda")
     if "global_step" in pl_sd:
         print(f"Global Step: {pl_sd['global_step']}")
     sd = pl_sd["state_dict"]
@@ -231,13 +231,14 @@ def main():
     if opt.laion400m:
         print("Falling back to LAION 400M model...")
         opt.config = "configs/latent-diffusion/txt2img-1p4B-eval.yaml"
-        opt.ckpt = "models/ldm/text2img-large/model.ckpt"
+        opt.ckpt = "/content/stable-diffusion-1.5/stable-diffusion-v-1-4-original/sd-v1-4.ckpt"
         opt.outdir = "outputs/txt2img-samples-laion400m"
 
     seed_everything(opt.seed)
 
     config = OmegaConf.load(f"{opt.config}")
     model = load_model_from_config(config, f"{opt.ckpt}")
+    torch.save(model.state_dict(), "model_checkpoint.pth")
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model = model.to(device)
